@@ -14,6 +14,7 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 * `cdk synth`       emits the synthesized CloudFormation template
 
 
+app is created just for fun :)
 api gateway >> producer lambda
 producer lambda >> SQS >> consumer lambda
 consumer lambda >> step function >> executor lambda >> dynamodb

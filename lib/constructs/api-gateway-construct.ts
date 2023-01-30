@@ -5,6 +5,7 @@ import {
   RequestValidator,
   RestApi,
 } from "aws-cdk-lib/aws-apigateway";
+import { Effect, PolicyDocument, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Construct } from "constructs";
 
