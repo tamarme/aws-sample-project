@@ -3,7 +3,7 @@ import { Table } from "aws-cdk-lib/aws-dynamodb";
 import { Construct } from "constructs";
 
 interface DynamoDBConstructProps {
-  tableName: string;
+  ordersTableName: string;
 }
 
 export class DynamoDBConstruct extends Construct {
@@ -12,7 +12,7 @@ export class DynamoDBConstruct extends Construct {
     super(scope, id);
 
     this.ordersTable = new Table(scope, "orders-table", {
-      tableName: props.tableName,
+      tableName: props.ordersTableName,
       partitionKey: {
         name: "orderId",
         type: aws_dynamodb.AttributeType.STRING,

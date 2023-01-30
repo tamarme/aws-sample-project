@@ -1,9 +1,8 @@
 import { Role } from "aws-cdk-lib/aws-iam";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import { Construct, Node } from "constructs";
+import { Construct } from "constructs";
 
 interface LambdaConstructProps {
-  lambdaName: string;
   producerLambdaRole: Role;
   consumerLambdaRole: Role;
   orderQueueUrl: string;

@@ -11,12 +11,10 @@ export class AwsSampleProjectStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const queues = new SQSConstruct(this, "orders-queue", {
-      queueName: "orders-queue",
-    });
+    const queues = new SQSConstruct(this, "orders-queue");
 
     const tables = new DynamoDBConstruct(this, "dynamodb-table-construct", {
-      tableName: "orders",
+      ordersTableName: "orders",
     });
 
     const roles = new IAMRoleConstruct(this, "iam-role-construct", {
@@ -25,7 +23,6 @@ export class AwsSampleProjectStack extends cdk.Stack {
     });
 
     const lambdas = new LambdaConstruct(this, "producer-lambda-construct", {
-      lambdaName: "producer-lambda",
       producerLambdaRole: roles.producerLambdaRole,
       consumerLambdaRole: roles.consumerLambdaRole,
       orderQueueUrl: queues.ordersQueue.queueUrl,
