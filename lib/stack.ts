@@ -3,9 +3,12 @@ import { Construct } from "constructs";
 import { APIGatewayConstruct } from "./constructs/api-gateway-construct";
 import { DynamoDBConstruct } from "./constructs/dynamodb-construct";
 import { IAMRoleConstruct } from "./constructs/iam-role-construct";
-import { LambdaConstruct } from "./constructs/lambda-construct";
 import { SQSConstruct } from "./constructs/sqs-construct";
 import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
+import { StepFunctionConstructor } from "./constructs/step-function-constructor";
+import { ConsumerLambdaConstruct } from "./constructs/consumer-lambda-construct";
+import { ProducerLambdaConstruct } from "./constructs/producer-lambda-construct";
+import { ExecutorLambdaConstruct } from "./constructs/executor-lambda-construct";
 
 export class AwsSampleProjectStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -22,19 +25,44 @@ export class AwsSampleProjectStack extends cdk.Stack {
       ordersTableArn: tables.ordersTable.tableArn,
     });
 
-    const lambdas = new LambdaConstruct(this, "producer-lambda-construct", {
-      producerLambdaRole: roles.producerLambdaRole,
-      consumerLambdaRole: roles.consumerLambdaRole,
-      orderQueueUrl: queues.ordersQueue.queueUrl,
-      orderTableName: tables.ordersTable.tableName,
+    const executorLambda = new ExecutorLambdaConstruct(
+      this,
+      "executor-lambda-construct",
+      {
+        executorLambdaRole: roles.executorLambdaRole,
+        orderTableName: tables.ordersTable.tableName,
+      }
+    );
+
+    const producerLambda = new ProducerLambdaConstruct(
+      this,
+      "producer-lambda-construct",
+      {
+        producerLambdaRole: roles.producerLambdaRole,
+        orderQueueUrl: queues.ordersQueue.queueUrl,
+      }
+    );
+
+    const sf = new StepFunctionConstructor(this, "step-function-constructor", {
+      invokeLambdaRole: roles.invokeLambdaFromSF,
+      executorLambda: executorLambda.lambda,
     });
 
-    lambdas.consumerLambda.addEventSource(
+    const consumerLambda = new ConsumerLambdaConstruct(
+      this,
+      "consumer-lambda-construct",
+      {
+        consumerLambdaRole: roles.consumerLambdaRole,
+        ordersSFArn: sf.ordersSFArn,
+      }
+    );
+
+    consumerLambda.lambda.addEventSource(
       new SqsEventSource(queues.ordersQueue)
     );
 
     new APIGatewayConstruct(this, "orders-api-gateway-construct", {
-      producerLambda: lambdas.producerLambda,
+      producerLambda: producerLambda.lambda,
     });
   }
 }

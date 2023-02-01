@@ -1,18 +1,16 @@
-import { OrderItem } from "./models";
-import { DynamoDB, SQS } from "aws-sdk";
+import { SQS, StepFunctions } from "aws-sdk";
 import { nanoid } from "nanoid";
 import { getEnv } from "../utils";
+import { MessageBody } from "./models";
 
-export async function saveToDB(record: OrderItem) {
-  const dynamodb = new DynamoDB.DocumentClient();
-  const item = {
-    TableName: getEnv("ORDERS_TABLE_NAME"),
-    Item: {
-      orderId: nanoid(),
-      ...record,
-    },
+export async function startStepFunctionExecution(messageBody: MessageBody) {
+  const now = new Date();
+  const params: StepFunctions.StartExecutionInput = {
+    stateMachineArn: getEnv("ORDERS_STEP_FUNCTION"),
+    input: JSON.stringify({ messageBody }),
+    name: `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${nanoid()}`,
   };
-  await dynamodb.put(item).promise();
+  await new StepFunctions().startExecution(params).promise();
 }
 
 export async function removeMessageFromSQSQueue() {
